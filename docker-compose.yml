@@ -1,0 +1,36 @@
+version: "2"
+services:
+  nginx:
+    container_name: nginx_efk
+    build: ./nginx
+    volumes:
+      - "./data:/var/log/efk/log/"
+    ports:
+      - "8080:80"
+  fluentd:
+    container_name: fluentd_efk
+    build: ./fluentd
+    volumes:
+      - "./data:/var/log/efk/log/"
+      - "./fluentd:/home/fluent/data:ro"
+    ports:
+      - "24224:24224"
+      - "5140:5140"
+      - "24284:24284"
+    depends_on:
+      - nginx
+  elasticsearch:
+    container_name: elasticsearch_efk
+    image: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    depends_on:
+      - fluentd
+  kibana:
+    container_name: kibana_efk
+    image: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
